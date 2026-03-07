@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from backend.models import User, TypingSample
+from fastapi import APIRouter, HTTPException, Request
+from backend.models import User, TypingSample, FailedAttempt
 from backend.ml.feature_extractor import extract_features
 from backend.ml.predict import verify_user
 from backend.ml.train_model import train_model, model_exists, update_model
@@ -120,7 +120,7 @@ async def train_user(data: TrainRequest):
     summary="Verify user's typing pattern",
     description="Verify if the typing pattern matches the user's trained profile. Use after POST /login."
 )
-async def verify_typing(data: VerifyRequest):
+async def verify_typing(data: VerifyRequest, request: Request):
     """
     Verify typing pattern against trained model.
     
@@ -132,13 +132,15 @@ async def verify_typing(data: VerifyRequest):
     5. Send to this endpoint for behavioral verification
     
     **Response:**
-    - **status**: "verified" (genuine user) or "suspicious" (anomaly detected)
+    - **status**: "verified" (genuine user), "retry" (first attempt failed), or "otp_required" (second attempt failed)
     - **confidence**: Score from 0.0 to 1.0
     
     **Note:** Model must be trained first via POST /train.
     """
     user_id = data.user_id
     keystrokes = data.keystrokes
+    attempt_number = data.attempt_number
+    image_data = data.image_data
     
     # Check user exists
     user = await User.filter(id=user_id).first()
@@ -188,15 +190,53 @@ async def verify_typing(data: VerifyRequest):
         
         # Retrain model with new verified sample (adaptive learning)
         update_model(features, user_id)
-
-    status = "verified" if result["prediction"] == 1 else "suspicious"
+        
+        # Verification successful
+        return {
+            "status": "verified",
+            "confidence": result["confidence"],
+            "fallback_available": False,
+            "model_scores": result.get("model_scores", {})
+        }
     
-    # Include fallback option when verification fails
-    fallback_available = status == "suspicious" and user.email is not None
-
-    return {
-        "status": status,
-        "confidence": result["confidence"],
-        "fallback_available": fallback_available,
-        "model_scores": result.get("model_scores", {})
-    }
+    # Verification failed - handle failed attempt
+    # Get request metadata
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+    
+    # Save failed attempt to database
+    await FailedAttempt.create(
+        user=user,
+        attempt_number=attempt_number,
+        confidence=result["confidence"],
+        ip_address=client_ip,
+        user_agent=user_agent,
+        # Only save image on second attempt
+        image_data=image_data if attempt_number == 2 else None
+    )
+    
+    print(f"[VERIFY] Failed attempt {attempt_number} for user {user_id}, confidence: {result['confidence']}")
+    
+    # Return based on attempt number
+    if attempt_number == 1:
+        # First failure - allow retry
+        return {
+            "status": "retry",
+            "confidence": result["confidence"],
+            "fallback_available": True,
+            "model_scores": result.get("model_scores", {}),
+            "attempts_remaining": 1
+        }
+    else:
+        # Second failure - require OTP fallback
+        image_captured = image_data is not None and len(image_data) > 0
+        print(f"[VERIFY] Second attempt failed. Image captured: {image_captured}")
+        
+        return {
+            "status": "otp_required",
+            "confidence": result["confidence"],
+            "fallback_available": True,
+            "model_scores": result.get("model_scores", {}),
+            "attempts_remaining": 0,
+            "image_captured": image_captured
+        }

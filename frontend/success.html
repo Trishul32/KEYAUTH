@@ -60,6 +60,12 @@
                         <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
                     </svg>
                 </button>
+                <button id="securityBtn" class="btn-secondary btn-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                    Security Dashboard
+                </button>
                 <button id="logoutBtn" class="btn-outline btn-full">Logout</button>
             </div>
         </div>
@@ -119,6 +125,11 @@
         // Continue button
         document.getElementById('continueBtn').addEventListener('click', () => {
             window.location.href = 'dashboard.html';
+        });
+
+        // Security Dashboard button
+        document.getElementById('securityBtn').addEventListener('click', () => {
+            window.location.href = 'security.html';
         });
 
         // Logout button

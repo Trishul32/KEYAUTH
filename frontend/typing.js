@@ -5,6 +5,113 @@ const verifyBtn = document.getElementById('verifyBtn');
 const matchStatus = document.getElementById('matchStatus');
 const phraseDisplay = document.getElementById('phraseDisplay');
 
+// =====================
+// Attempt Tracking
+// =====================
+const MAX_ATTEMPTS = 2;
+let currentAttempt = 1;
+
+// =====================
+// Webcam Support
+// =====================
+let webcamStream = null;
+const webcamVideo = document.getElementById('webcamVideo');
+
+/**
+ * Initialize webcam on page load (hidden, for security capture only)
+ */
+async function initializeWebcam() {
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: 'user'
+      },
+      audio: false
+    });
+    
+    if (webcamVideo) {
+      webcamVideo.srcObject = webcamStream;
+    }
+    console.log('[WEBCAM] Camera initialized successfully');
+  } catch (err) {
+    console.warn('[WEBCAM] Camera permission denied or not available:', err.message);
+    // System continues to work without webcam
+    webcamStream = null;
+  }
+}
+
+/**
+ * Capture webcam image as Base64 JPEG
+ * @returns {string|null} Base64 image data or null if capture fails
+ */
+function captureWebcamImage() {
+  if (!webcamStream || !webcamVideo) {
+    console.warn('[WEBCAM] No webcam stream available for capture');
+    return null;
+  }
+  
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(webcamVideo, 0, 0, canvas.width, canvas.height);
+    
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    console.log('[WEBCAM] Image captured successfully');
+    return imageData;
+  } catch (err) {
+    console.error('[WEBCAM] Failed to capture image:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Update attempt indicator display
+ */
+function updateAttemptIndicator() {
+  const indicator = document.getElementById('attemptIndicator');
+  if (indicator) {
+    indicator.textContent = `Attempt ${currentAttempt} of ${MAX_ATTEMPTS}`;
+  }
+}
+
+/**
+ * Show retry message after first failed attempt
+ */
+function showRetryMessage() {
+  const retryMessage = document.getElementById('retryMessage');
+  const retryMessageText = document.getElementById('retryMessageText');
+  if (retryMessage && retryMessageText) {
+    retryMessageText.textContent = `Verification failed. ${MAX_ATTEMPTS - currentAttempt} attempt remaining.`;
+    retryMessage.style.display = 'block';
+  }
+}
+
+/**
+ * Reset for next attempt
+ */
+function resetForNextAttempt() {
+  // Clear input and keystrokes
+  input.value = '';
+  keystrokes.length = 0;
+  
+  // Update UI
+  matchStatus.textContent = '';
+  matchStatus.className = 'match-status';
+  verifyBtn.disabled = true;
+  verifyBtn.textContent = 'Verify Identity';
+  
+  // Focus input for next attempt
+  input.focus();
+}
+
+// Initialize webcam on page load
+initializeWebcam();
+
 // Fetch phrase from API on page load
 async function loadPhrase() {
   try {
@@ -64,13 +171,21 @@ verifyBtn.addEventListener('click', async () => {
   verifyBtn.disabled = true;
   verifyBtn.textContent = 'Verifying...';
 
+  // Capture webcam image only on second attempt
+  let imageData = null;
+  if (currentAttempt === 2) {
+    imageData = captureWebcamImage();
+  }
+
   try {
     const res = await fetch('http://localhost:8000/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         user_id: parseInt(userId), 
-        keystrokes 
+        keystrokes,
+        attempt_number: currentAttempt,
+        image_data: imageData
       })
     });
     const data = await res.json();
@@ -79,22 +194,47 @@ verifyBtn.addEventListener('click', async () => {
       // Handle error responses (e.g., model not trained)
       alert(data.detail || 'Verification failed');
       verifyBtn.disabled = false;
-      verifyBtn.textContent = 'Verify';
+      verifyBtn.textContent = 'Verify Identity';
       return;
     }
     
-    // Check if typing verification failed but OTP fallback is available
+    // Handle verification result based on status
+    if (data.status === 'verified') {
+      // Success - redirect to success page
+      localStorage.setItem('verificationResult', JSON.stringify(data));
+      window.location.href = 'success.html';
+      return;
+    }
+    
+    if (data.status === 'retry') {
+      // First attempt failed - allow retry
+      currentAttempt = 2;
+      updateAttemptIndicator();
+      showRetryMessage();
+      resetForNextAttempt();
+      return;
+    }
+    
+    if (data.status === 'otp_required') {
+      // Second attempt failed - redirect to OTP fallback
+      console.log('[VERIFY] Second attempt failed. Image captured:', data.image_captured);
+      showOtpFallback();
+      return;
+    }
+    
+    // Legacy support: Handle old 'suspicious' status with fallback_available
     if (data.status === 'suspicious' && data.fallback_available) {
       showOtpFallback();
       return;
     }
     
+    // If we get here with suspicious status but no fallback, show error
     localStorage.setItem('verificationResult', JSON.stringify(data));
     window.location.href = 'success.html';
   } catch (err) {
     alert('Cannot connect to server');
     verifyBtn.disabled = false;
-    verifyBtn.textContent = 'Verify';
+    verifyBtn.textContent = 'Verify Identity';
   }
 });
 

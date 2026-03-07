@@ -174,6 +174,8 @@ class VerifyRequest(BaseModel):
         ...,
         description="List of keystroke events from a single typing session"
     )
+    attempt_number: int = Field(default=1, ge=1, le=2, description="Attempt number (1 or 2)")
+    image_data: Optional[str] = Field(default=None, description="Base64 webcam image (captured on 2nd failed attempt)")
 
     model_config = {
         "json_schema_extra": {
@@ -196,10 +198,12 @@ class VerifyRequest(BaseModel):
 
 class VerifyResponse(BaseModel):
     """Verification result with multi-model scores"""
-    status: Literal["verified", "suspicious"] = Field(description="Verification result")
+    status: Literal["verified", "suspicious", "retry", "otp_required"] = Field(description="Verification result")
     confidence: float = Field(ge=0, le=1, description="Weighted confidence score (0.0 to 1.0)")
     fallback_available: bool = Field(default=False, description="Whether OTP fallback is available")
     model_scores: dict = Field(default={}, description="Individual model confidence scores")
+    attempts_remaining: Optional[int] = Field(default=None, description="Remaining verification attempts")
+    image_captured: Optional[bool] = Field(default=None, description="Whether webcam image was captured")
 
     model_config = {
         "json_schema_extra": {

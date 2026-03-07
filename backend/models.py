@@ -48,3 +48,15 @@ class OTPSession(Model):
     attempts = fields.IntField(default=0)  # Max 3 attempts
     used = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
+
+
+class FailedAttempt(Model):
+    """Failed verification attempt with optional webcam capture"""
+    id = fields.IntField(pk=True)
+    user = fields.ForeignKeyField("models.User", related_name="failed_attempts")
+    attempt_number = fields.IntField()  # 1 or 2
+    image_data = fields.TextField(null=True)  # Base64 encoded webcam image
+    confidence = fields.FloatField()  # Confidence score from verification
+    ip_address = fields.CharField(max_length=45, null=True)  # IPv4 or IPv6
+    user_agent = fields.CharField(max_length=512, null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
