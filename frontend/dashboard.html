@@ -3,138 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Result</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .dual-factor {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 25px 0;
-        }
-        .factor-box {
-            text-align: center;
-            padding: 20px 30px;
-            border-radius: 15px;
-            background: #f8f9fa;
-            min-width: 140px;
-        }
-        .factor-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .factor-value {
-            font-size: 2.5em;
-            font-weight: bold;
-        }
-        .factor-value.text { color: #28a745; }
-        .factor-value.rhythm { color: #667eea; }
-        
-        .combined-score {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 15px;
-            margin: 20px auto;
-            display: inline-block;
-        }
-        .combined-label {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-        .combined-value {
-            font-size: 3em;
-            font-weight: bold;
-        }
-        
-        .model-scores {
-            margin-top: 25px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        .model-scores h3 {
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .model-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .model-name {
-            width: 120px;
-            font-weight: 600;
-            color: #555;
-            font-size: 0.9em;
-        }
-        .model-bar-container {
-            flex: 1;
-            height: 20px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-right: 15px;
-        }
-        .model-bar {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.6s ease-out;
-        }
-        .model-bar.svm { background: linear-gradient(90deg, #667eea, #764ba2); }
-        .model-bar.iforest { background: linear-gradient(90deg, #11998e, #38ef7d); }
-        .model-bar.dtw { background: linear-gradient(90deg, #f093fb, #f5576c); }
-        .model-score {
-            width: 50px;
-            font-weight: bold;
-            text-align: right;
-            font-size: 0.9em;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-        .status-badge.verified {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-        }
-        .status-badge.suspicious {
-            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-            color: white;
-        }
-        .help-text {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 15px;
-        }
-    </style>
+    <title>Dashboard - KeyAuth</title>
+    <link rel="stylesheet" href="cyber-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
 </head>
 <body>
-    <div class="container">
-        <h1>Authentication Result</h1>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="nav-logo">
+            <div class="nav-logo-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg>
+            </div>
+            <span class="nav-logo-text">Key<span>Auth</span></span>
+        </a>
         
-        <div class="result-box">
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+        </ul>
+        
+        <a href="#" id="navLogoutBtn" class="nav-cta" onclick="logout()">Logout</a>
+        
+        <div class="nav-toggle" id="navToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-page">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h1>Authentication Result</h1>
+            </div>
+            
             <div id="statusBadge" class="status-badge"></div>
             
             <!-- Dual-factor display: Text + Rhythm -->
             <div class="dual-factor">
                 <div class="factor-box">
+                    <div class="factor-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.5 4v3h5v12h3V7h5V4h-13zm19 5h-9v3h3v7h3v-7h3V9z"/>
+                        </svg>
+                    </div>
                     <div class="factor-label">Text Match</div>
                     <div class="factor-value text" id="textMatch">100%</div>
                 </div>
                 <div class="factor-box">
+                    <div class="factor-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
+                        </svg>
+                    </div>
                     <div class="factor-label">Typing Rhythm</div>
                     <div class="factor-value rhythm" id="rhythmMatch">--</div>
                 </div>
@@ -150,40 +74,68 @@
                 Text match verifies <strong>what</strong> was typed.<br>
                 Typing rhythm verifies <strong>how</strong> it was typed.
             </p>
+            
+            <div class="model-scores">
+                <h3>Biometric Model Breakdown</h3>
+                
+                <div class="model-row">
+                    <span class="model-name">One-Class SVM</span>
+                    <div class="model-bar-container">
+                        <div id="svmBar" class="model-bar svm"></div>
+                    </div>
+                    <span id="svmScore" class="model-score">--</span>
+                </div>
+                
+                <div class="model-row">
+                    <span class="model-name">Isolation Forest</span>
+                    <div class="model-bar-container">
+                        <div id="iforestBar" class="model-bar iforest"></div>
+                    </div>
+                    <span id="iforestScore" class="model-score">--</span>
+                </div>
+                
+                <div class="model-row">
+                    <span class="model-name">DTW Similarity</span>
+                    <div class="model-bar-container">
+                        <div id="dtwBar" class="model-bar dtw"></div>
+                    </div>
+                    <span id="dtwScore" class="model-score">--</span>
+                </div>
+            </div>
+            
+            <button onclick="window.location.href='login.html'" class="btn-primary btn-full">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Login
+            </button>
         </div>
-        
-        <div class="model-scores">
-            <h3>Biometric Model Breakdown</h3>
-            
-            <div class="model-row">
-                <span class="model-name">One-Class SVM</span>
-                <div class="model-bar-container">
-                    <div id="svmBar" class="model-bar svm"></div>
-                </div>
-                <span id="svmScore" class="model-score">--</span>
-            </div>
-            
-            <div class="model-row">
-                <span class="model-name">Isolation Forest</span>
-                <div class="model-bar-container">
-                    <div id="iforestBar" class="model-bar iforest"></div>
-                </div>
-                <span id="iforestScore" class="model-score">--</span>
-            </div>
-            
-            <div class="model-row">
-                <span class="model-name">DTW Similarity</span>
-                <div class="model-bar-container">
-                    <div id="dtwBar" class="model-bar dtw"></div>
-                </div>
-                <span id="dtwScore" class="model-score">--</span>
-            </div>
-        </div>
-        
-        <button onclick="window.location.href='login.html'">Back to Login</button>
     </div>
 
     <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile nav toggle
+        document.getElementById('navToggle').addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('verificationResult');
+            window.location.href = 'login.html';
+        }
+
         // Read result from localStorage
         const result = JSON.parse(localStorage.getItem('verificationResult'));
 

@@ -104,9 +104,11 @@ verifyBtn.addEventListener('click', async () => {
 
 function showOtpFallback() {
   // Hide typing section elements and disable input
-  document.querySelector('.instruction').style.display = 'none';
+  const typingInstruction = document.querySelector('.typing-instruction');
+  if (typingInstruction) typingInstruction.style.display = 'none';
   document.getElementById('phraseDisplay').style.display = 'none';
-  input.style.display = 'none';
+  const inputGroup = input.closest('.input-group');
+  if (inputGroup) inputGroup.style.display = 'none';
   input.disabled = true;  // Prevent capturing keystrokes
   input.blur();  // Remove focus
   matchStatus.style.display = 'none';
