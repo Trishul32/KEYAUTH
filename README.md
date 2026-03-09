@@ -602,13 +602,7 @@ curl http://localhost:8000/admin/failed-attempts
 
 ---
 
-## 👤 Author
 
-**Likhith V C**
-
-- 📧 Email: likhithvc21@gmail.com
-- 🐙 GitHub: [@likhithvc](https://github.com/likhithvc)
-- 💼 LinkedIn: [Likhith V C](https://linkedin.com/in/likhithvc)
 
 <br>
 

@@ -8,6 +8,7 @@ uvicorn>=0.30.0
 # Database
 tortoise-orm>=0.21.0
 aiosqlite>=0.20.0
+asyncpg>=0.29.0  # PostgreSQL driver for production
 
 # Authentication & Security
 bcrypt>=4.2.0

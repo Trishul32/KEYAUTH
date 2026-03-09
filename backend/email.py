@@ -216,10 +216,18 @@ async def send_otp_email(
     Returns:
         True if email sent successfully, False otherwise
     """
+    # ALWAYS print OTP to console for development/testing
+    print(f"")
+    print(f"{'='*50}")
+    print(f"[OTP] Verification Code for {username}: {code}")
+    print(f"[OTP] Email: {email}")
+    print(f"[OTP] Expires in: {expires_minutes} minutes")
+    print(f"{'='*50}")
+    print(f"")
+    
     # Check if SMTP is configured
     if not SMTP_EMAIL or not SMTP_PASSWORD:
-        print(f"[EMAIL] SMTP not configured. Would send OTP to {email}:")
-        print(f"        User: {username}, Code: {code}")
+        print(f"[EMAIL] SMTP not configured - check .env file")
         return False
     
     try:

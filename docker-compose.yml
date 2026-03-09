@@ -1,0 +1,30 @@
+# Docker Compose for local development with PostgreSQL
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: keyauth
+      POSTGRES_PASSWORD: keyauth_dev
+      POSTGRES_DB: keyauth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://keyauth:keyauth_dev@db:5432/keyauth
+      - SMTP_EMAIL=${SMTP_EMAIL}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    depends_on:
+      - db
+    volumes:
+      - ./backend/ml/models:/app/backend/ml/models
+
+volumes:
+  postgres_data:
