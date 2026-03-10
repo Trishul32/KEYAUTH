@@ -10,9 +10,8 @@ load_dotenv()
 # Get database URL from environment, default to SQLite for local development
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite://db.sqlite3")
 
-# Fix for some cloud providers that use "postgres://" instead of "postgresql://"
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# Tortoise ORM with asyncpg uses "postgres://" or "asyncpg://" scheme
+# No conversion needed - Railway provides postgres:// which works with Tortoise
 
 TORTOISE_ORM = {
     "connections": {"default": DATABASE_URL},
