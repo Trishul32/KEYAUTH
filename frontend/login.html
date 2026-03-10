@@ -102,6 +102,8 @@
             document.getElementById('navLinks').classList.toggle('active');
         });
 
+        const API_URL = 'https://web-production-396f4.up.railway.app';
+
         // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -110,7 +112,7 @@
             const message = document.getElementById('message');
 
             try {
-                const response = await fetch('http://localhost:8000/login', {
+                const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -128,7 +130,7 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                message.textContent = 'Backend server not reachable at localhost:8000. Please ensure the server is running.';
+                message.textContent = 'Cannot connect to server. Please try again later.';
                 message.className = 'auth-message error';
             }
         });

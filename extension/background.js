@@ -1,6 +1,6 @@
 // KeyAuth Extension - Background Service Worker
 
-const DEFAULT_API_URL = 'http://localhost:8000';
+const DEFAULT_API_URL = 'https://web-production-396f4.up.railway.app';
 
 // Get API URL from storage or use default
 async function getApiUrl() {

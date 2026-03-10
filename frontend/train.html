@@ -48,10 +48,12 @@
             window.location.href = 'register.html';
         }
 
+        const API_URL = 'https://web-production-396f4.up.railway.app';
+
         // Fetch phrase from API
         async function loadPhrase() {
             try {
-                const res = await fetch('http://localhost:8000/phrase');
+                const res = await fetch(`${API_URL}/phrase`);
                 const data = await res.json();
                 REQUIRED_PHRASE = data.phrase;
                 phraseDisplay.textContent = REQUIRED_PHRASE;
@@ -142,7 +144,7 @@
             message.style.color = '#667eea';
 
             try {
-                const res = await fetch('http://localhost:8000/train', {
+                const res = await fetch(`${API_URL}/train`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -1,3 +1,4 @@
+const API_URL = 'https://web-production-396f4.up.railway.app';
 let REQUIRED_PHRASE = '';
 const keystrokes = [];
 const input = document.getElementById('typingInput');
@@ -115,7 +116,7 @@ initializeWebcam();
 // Fetch phrase from API on page load
 async function loadPhrase() {
   try {
-    const res = await fetch('http://localhost:8000/phrase');
+    const res = await fetch(`${API_URL}/phrase`);
     const data = await res.json();
     REQUIRED_PHRASE = data.phrase;
     phraseDisplay.textContent = REQUIRED_PHRASE;
@@ -178,7 +179,7 @@ verifyBtn.addEventListener('click', async () => {
   }
 
   try {
-    const res = await fetch('http://localhost:8000/verify', {
+    const res = await fetch(`${API_URL}/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -269,7 +270,7 @@ document.getElementById('requestOtpBtn')?.addEventListener('click', async () => 
   otpMessage.textContent = '';
   
   try {
-    const res = await fetch('http://localhost:8000/request-otp', {
+    const res = await fetch(`${API_URL}/request-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: parseInt(userId) })
@@ -315,7 +316,7 @@ document.getElementById('verifyOtpBtn')?.addEventListener('click', async () => {
   otpMessage.textContent = '';
   
   try {
-    const res = await fetch('http://localhost:8000/verify-otp', {
+    const res = await fetch(`${API_URL}/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: parseInt(userId), code: code })
@@ -357,7 +358,7 @@ document.getElementById('resendOtpBtn')?.addEventListener('click', async () => {
   otpMessage.textContent = '';
   
   try {
-    const res = await fetch('http://localhost:8000/request-otp', {
+    const res = await fetch(`${API_URL}/request-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: parseInt(userId) })

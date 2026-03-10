@@ -1,6 +1,6 @@
 // KeyAuth Extension - Options/Settings Script
 
-const DEFAULT_API_URL = 'http://localhost:8000';
+const DEFAULT_API_URL = 'https://web-production-396f4.up.railway.app';
 const DEFAULT_SESSION_DURATION = 30;
 
 // DOM Elements

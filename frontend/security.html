@@ -273,12 +273,14 @@
             window.location.href = 'login.html';
         }
 
+        const API_URL = 'https://web-production-396f4.up.railway.app';
+
         // Load failed attempts
         async function loadFailedAttempts() {
             const container = document.getElementById('attemptsContainer');
             
             try {
-                const res = await fetch('http://localhost:8000/admin/failed-attempts');
+                const res = await fetch(`${API_URL}/admin/failed-attempts`);
                 const attempts = await res.json();
                 
                 if (!res.ok) {
@@ -368,7 +370,7 @@
             
             // Fetch the image page to get the image data
             try {
-                const res = await fetch(`http://localhost:8000/admin/failed-attempts/${attemptId}/image`);
+                const res = await fetch(`${API_URL}/admin/failed-attempts/${attemptId}/image`);
                 const html = await res.text();
                 
                 // Extract image src from HTML
